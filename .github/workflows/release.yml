@@ -1,0 +1,61 @@
+name: Build Release
+
+# 触发时机：
+#   1. 推送以 v 开头的 tag（如 v1.0.4）→ 自动打包并发 Release
+#   2. 在 GitHub 仓库 Actions 页手动点击 Run workflow
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+# Release 需要写权限才能上传资产
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and publish
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # ── 自包含单文件：双击即用，目标机无需装 .NET（推荐分发） ──
+      # 关键：IncludeNativeLibrariesForSelfExtract 必须开启，
+      # 否则 WPF 的 native 库（*_cor3.dll）会散落在 exe 旁边。
+      - name: Publish self-contained single file
+        run: >
+          dotnet publish QingDesk.csproj
+          -c Release -r win-x64 --self-contained
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=None -p:DebugSymbols=false
+          -o ./publish/self-contained
+
+      # ── 框架依赖：体积小（~324KB），但目标机需装 .NET 8 桌面运行时 ──
+      - name: Publish framework-dependent
+        run: dotnet publish QingDesk.csproj -c Release -o ./publish/framework-dependent
+
+      - name: Zip framework-dependent build
+        shell: pwsh
+        run: >
+          Compress-Archive
+          -Path ./publish/framework-dependent/*
+          -DestinationPath ./publish/QingDesk-framework-dependent-win-x64.zip
+
+      # ── 创建 Release 并上传资产 ──
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            publish/self-contained/QingDesk.exe
+            publish/QingDesk-framework-dependent-win-x64.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

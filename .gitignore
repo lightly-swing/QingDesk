@@ -1,0 +1,33 @@
+﻿# .NET build output
+bin/
+obj/
+
+# All publish output directories (Publish/, Publish1.0/, Publish2.0/ etc.)
+Publish*/
+publish/
+
+# Debug symbols
+*.pdb
+
+# NuGet packages (prevent local nupkg accumulation)
+*.nupkg
+
+# User-specific files
+*.user
+*.suo
+.vs/
+
+# IDE
+.idea/
+*.DotSettings.user
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Logs
+*.log
+
+# WorkBuddy 工作区数据
+.workbuddy/
