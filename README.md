@@ -6,7 +6,7 @@
 
 ## 📥 下载地址
 
-- **GitHub Releases**：[点击下载](https://github.com/你的用户名/QingDesk/releases)
+- **GitHub Releases**：[点击下载](https://github.com/lightly-swing/QingDesk/releases)
 
 ## ✨ 功能特点
 
