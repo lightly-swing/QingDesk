@@ -1,9 +1,8 @@
 # QingDesk - Windows 桌面待办事项工具
 
 一个极致轻量的 Windows 桌面待办事项工具。
-半透明磨砂风格，常驻系统托盘，悬浮于桌面之上，始终清晰可见。
 
-> 基于开源项目 [PinToDesk](https://github.com/li5bo5/PinToDesk) 深度二次开发，遵循 AGPL v3 许可证。
+> 基于作者 [li5bo5](https://github.com/li5bo5) 开源项目 [PinToDesk](https://github.com/li5bo5/PinToDesk) 深度二次开发，遵循 AGPL v3 许可证。
 
 ## 📥 下载地址
 
@@ -120,14 +119,6 @@ QingDesk/
 └── QingDesk.csproj
 ```
 
-## 🤖 自动发版
-
-项目内置 GitHub Actions 工作流，推送以 `v` 开头的 tag（如 `v1.0.1`）即可自动打包并发布 Release，无需本地手动构建。
-
-## 📄 开源许可
+## 📄 开源协议
 
 本项目基于 [PinToDesk](https://github.com/li5bo5/PinToDesk) 二次开发，遵循 **AGPL v3** 许可证（详见 [LICENSE](LICENSE)）。
-
-## 致谢
-
-- 感谢原项目 [PinToDesk](https://github.com/li5bo5/PinToDesk) 作者 [li5bo5](https://github.com/li5bo5) 的开源贡献
