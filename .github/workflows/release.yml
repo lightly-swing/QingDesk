@@ -26,36 +26,55 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      # ── 从 csproj 读取 <Version>，用于产物命名（tag 与手动触发都适用） ──
+      - name: Extract version
+        id: version
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path QingDesk.csproj -Pattern '<Version>(.*?)</Version>').Matches[0].Groups[1].Value.Trim()
+          "version=$v" >> $env:GITHUB_OUTPUT
+
       # ── 自包含单文件：双击即用，目标机无需装 .NET（推荐分发） ──
-      # 关键：IncludeNativeLibrariesForSelfExtract 必须开启，
-      # 否则 WPF 的 native 库（*_cor3.dll）会散落在 exe 旁边。
+      # 关键参数说明：
+      #   IncludeNativeLibrariesForSelfExtract 必须开启，否则 WPF 的
+      #   native 库（*_cor3.dll）会散落在 exe 旁边。
+      #   EnableCompressionInSingleFile 压缩单文件，155MB → 约 69MB，
+      #   代价是首次启动多 1~2 秒解压。
       - name: Publish self-contained single file
         run: >
           dotnet publish QingDesk.csproj
           -c Release -r win-x64 --self-contained
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
           -p:DebugType=None -p:DebugSymbols=false
           -o ./publish/self-contained
+
+      # ── 重命名自包含 exe：QingDesk_v{版本}_SelfContained.exe ──
+      - name: Rename self-contained exe
+        shell: pwsh
+        run: |
+          Rename-Item publish/self-contained/QingDesk.exe "QingDesk_v${{ steps.version.outputs.version }}_SelfContained.exe"
 
       # ── 框架依赖：体积小（~324KB），但目标机需装 .NET 8 桌面运行时 ──
       - name: Publish framework-dependent
         run: dotnet publish QingDesk.csproj -c Release -o ./publish/framework-dependent
 
+      # ── 框架依赖打包成 zip：QingDesk_v{版本}_framework-dependent.zip ──
       - name: Zip framework-dependent build
         shell: pwsh
         run: >
           Compress-Archive
           -Path ./publish/framework-dependent/*
-          -DestinationPath ./publish/QingDesk-framework-dependent-win-x64.zip
+          -DestinationPath ./publish/QingDesk_v${{ steps.version.outputs.version }}_framework-dependent.zip
 
       # ── 创建 Release 并上传资产 ──
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            publish/self-contained/QingDesk.exe
-            publish/QingDesk-framework-dependent-win-x64.zip
+            publish/self-contained/QingDesk_v*.exe
+            publish/QingDesk_v*_framework-dependent.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
